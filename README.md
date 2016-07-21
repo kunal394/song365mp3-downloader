@@ -15,7 +15,7 @@ song365mp3 music downloader in python
 usage: 365dn.py [-h] [-v] [-n] [-a] music_url
 
 positional arguments:
-  music_url        Bandcamp Song URL
+  music_url        song365mp3 URL
 
 optional arguments:
   -h, --help       show this help message and exit
