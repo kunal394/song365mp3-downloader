@@ -34,6 +34,15 @@ def vprint(arg):
         for i in arg:
             print i
 
+def get_dl_url(furl):
+    r1 = requests.get(furl)
+    s1 = BeautifulSoup(r1.text, 'html.parser')
+    js = s1.find_all('script')[7]
+    pattern = re.compile(ur'hqurl = \'.*\'')
+    dl_url = pattern.findall(unicode(js))[0].split('=')[1].strip()
+    dl_url = dl_url[1:][:-1]
+    return dl_url
+
 def parse_url(url):
 
     print """\n\nWarning!!! Either input a list of comma separated song nos
@@ -49,31 +58,43 @@ def parse_url(url):
     vprint(["Data fetching complete", "Parsing data..."])
 
     s = BeautifulSoup(r.text, 'html.parser')
-    raw_songs_list = s.find_all('div', {'class' : ['song-name', 'buttons'] })
 
-    vprint(["Parsing directory paths..."])
+    dpath = []
 
-    artist_name = s.find('em' , {'class' : 'profile-item-value'}).text
-    album_name = s.find('div', {'class' : 'page'}).h1.text
-    dpath = [artist_name, album_name]
+    t = url.split('/')[3]
+    if t == 'album':
+        raw_songs_list = s.find_all('div', {'class' : ['song-name', 'buttons'] })
 
-    vprint(["Parsing Complete"])
+        vprint(["Parsing directory paths..."])
 
-    vprint(["Creating songs dictionary..."])
+        artist_name = s.find('em' , {'class' : 'profile-item-value'}).text.strip().title()
+        album_name = s.find('div', {'class' : 'page'}).h1.text.strip().title()
+        dpath = [artist_name, album_name]
 
-    i = 0
-    songs_dict = {}
-    while i < len(raw_songs_list):
-        song_name = raw_songs_list[i].text
-        dl_link = prefix_url + raw_songs_list[i + 1].find('a', {'class' : 'download'})['href']
-        songs_dict.update({i/2 : [song_name, dl_link]})
-        i += 2
+        vprint(["Parsing Complete"])
 
-    vprint(["Songs dictionary created"])
+        vprint(["Creating songs dictionary..."])
+
+        i = 0
+        songs_dict = {}
+        while i < len(raw_songs_list):
+            song_name = raw_songs_list[i].text
+            dl_link = prefix_url + raw_songs_list[i + 1].find('a', {'class' : 'download'})['href']
+            songs_dict.update({i/2 : [song_name, dl_link]})
+            i += 2
+
+        vprint(["Songs dictionary created"])
    
-    handle_rest(songs_dict, dpath)
+        handle_album(songs_dict, dpath)
 
-def handle_rest(songs_dict, dpath):
+    elif t == 'track':
+        artist_name = s.find('div', {'id' : 'title'}).span.text.strip().title()
+        dpath = [artist_name]
+        song_name = s.find('div', {'id' : 'title'}).text.split('-')[0].strip().title()
+        furl = prefix_url + s.find('a', {'class' : 'right'})['href']
+        handle_track(dpath, furl, song_name)
+
+def handle_album(songs_dict, dpath):
     dl_dict = fetch_download_dict(songs_dict)    
 
     if len(dl_dict) == 0:
@@ -91,6 +112,10 @@ def handle_rest(songs_dict, dpath):
             print "Downloading " + str(i) + ': ' + dl_dict[i][0] + "... "
             download_song(dirpath + '/' + dl_dict[i][0] + '.mp3', dl_dict[i][1])
             print "Downloading Complete"
+
+def handle_track(dpath, furl, song_name):
+    songs_dict = {1 : [song_name, furl]}
+    handle_album(songs_dict, dpath)
 
 def fetch_download_dict(songs_dict):
     global automate, noconfirm
@@ -116,12 +141,7 @@ def fetch_download_dict(songs_dict):
         title = songs_dict[i][0]
         furl = songs_dict[i][1]
         vprint(["Fetching download url for the song: " + title + " from url: " + furl])
-        r1 = requests.get(furl)
-        s1 = BeautifulSoup(r1.text, 'html.parser')
-        js = s1.find_all('script')[7]
-        pattern = re.compile(ur'hqurl = \'.*\'')
-        dl_url = pattern.findall(unicode(js))[0].split('=')[1].strip()
-        dl_url = dl_url[1:][:-1]
+        dl_url = get_dl_url(furl)
         dl_dict.update({i : [title, dl_url]})
     
     return dl_dict
