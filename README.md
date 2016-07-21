@@ -34,10 +34,10 @@ the current folder.
 
 > Download a complete album given the url (`https://www.song365mp3.info/album/randartist-randalbum-12345.html`)
 
+> Download a single track given the url (`https://www.song365mp3.info/track/track-songname-12345.html`)
+
 ## TODO
 
 > Download all songs of an artist given the url
-
-> Download a single track given the url
 
 > Implement regex input or a better way to help user select songs from the list instead of providing comma separated list.
