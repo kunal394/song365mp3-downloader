@@ -4,29 +4,12 @@
     Music downloader for the website https://www.song365mp3.info/
 """
 
-import signal, time, os, sys, requests, re, argparse
-from bs4 import BeautifulSoup
+from main import *
 
 verbose = False
 automate = False
 noconfirm = False
 prefix_url = "https://www.song365mp3.info"
-
-def exit_gracefully(signum, frame):
-    # restore the original signal handler as otherwise evil things will happen
-    # in raw_input when CTRL+C is pressed, and our signal handler is not re-entrant
-    signal.signal(signal.SIGINT, original_sigint)
-
-    try:
-        if raw_input("\nReally quit? (y/n)> ").lower().startswith('y'):
-            sys.exit(1)
-
-    except KeyboardInterrupt:
-        print("Ok ok, quitting")
-        sys.exit(1)
-
-    # restore the exit gracefully handler here    
-    signal.signal(signal.SIGINT, exit_gracefully)
 
 def vprint(arg):
     global verbose
@@ -37,7 +20,11 @@ def vprint(arg):
 def get_dl_url(furl):
     r1 = requests.get(furl)
     s1 = BeautifulSoup(r1.text, 'html.parser')
-    js = s1.find_all('script')[7]
+    try:
+        js = s1.find_all('script')[7]
+    except:
+        print "Error: ", r1.content
+        return ""
     pattern = re.compile(ur'hqurl = \'.*\'')
     dl_url = pattern.findall(unicode(js))[0].split('=')[1].strip()
     dl_url = dl_url[1:][:-1]
@@ -111,7 +98,6 @@ def handle_album(songs_dict, dpath):
         for i in dl_dict:
             print "Downloading " + str(i) + ': ' + dl_dict[i][0] + "... "
             download_song(dirpath + '/' + dl_dict[i][0] + '.mp3', dl_dict[i][1])
-            print "Downloading Complete"
 
 def handle_track(dpath, furl, song_name):
     songs_dict = {1 : [song_name, furl]}
@@ -129,6 +115,7 @@ def fetch_download_dict(songs_dict):
             if i in songs_dict:
                 print str(i) + ': ' + songs_dict[i][0]
     elif noconfirm:
+        print 'here in noconfirm'
         dl_list = display_songs(songs_dict)
     else:
         dl_list = select_songs(songs_dict)
@@ -145,77 +132,6 @@ def fetch_download_dict(songs_dict):
         dl_dict.update({i : [title, dl_url]})
     
     return dl_dict
-
-def select_songs(songs_dict):
-
-    user_response = 'n'
-    while user_response.strip() is not 'y':
-        dl_list = display_songs(songs_dict)    
-        print "Are you sure you are done with your songs' choice and you want to go ahead and download them?"
-        user_response = raw_input("y/n/c(to cancel): ")
-        if user_response.strip() == 'c':
-            print "Downloading canceled"
-            sys.exit()
-        while user_response.strip() is not 'y' and user_response.strip() is not 'n':
-            print "Please enter a corect response!!"
-            user_response = raw_input("y/n/c(to cancel): ")
-            if user_response.strip() == 'c':
-                print "Downloading canceled"
-                sys.exit()
-    return dl_list            
-
-def display_songs(songs_dict):
-    #print songs_dict
-    for key in songs_dict:
-        print str(key) + ": " + songs_dict[key][0]
-    print ""    
-    
-    user_input = raw_input()
-    if user_input.strip() == 'all':
-        dl_list = [s for s in songs_dict]
-    else:
-        dl_list = [int(s) for s in user_input.split(',') if s.strip().isdigit()]
-    
-    dl_list = list(set(dl_list))
-
-    print "\nYou have selected following songs:"
-    for i in dl_list:
-        if i in songs_dict:
-            print str(i) + ': ' + songs_dict[i][0]
-        else:
-            dl_list.remove(i)
-    if len(dl_list) == 0:
-        print "Oops!! Looks like you either entered wrong song nos or none at all."
-
-    return dl_list
-
-def open_file(song_file):
-    while True:
-        try:
-            f = open(song_file, 'wb')
-        except IOError as e:
-            print e.errno
-            old_song_file = song_file
-            print "Invalid song name: " + song_file + "."
-            song_file = raw_input("Please provide a valid name along with the absolute path as present in the invalid name: ")
-            print "Changing file name from " + old_song_file + " to " + song_file 
-        else:
-            return f
-
-def download_song(song_file, url):
-
-    f = open_file(song_file)
-
-    print "Downloading " + song_file + "..."
-    data = requests.get(url, stream = True)
-    for chunk in data.iter_content(chunk_size=1024*1024):
-        if chunk:
-            print "len: " + str((len(chunk))/(1024*1024)) + "MB"
-            f.write(chunk)
-    f.close()
-    return data        
-
-
 
 #first download:https://www.song365mp3.info/album/omnia-alive-131442.html
 
