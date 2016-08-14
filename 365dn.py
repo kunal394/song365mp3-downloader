@@ -125,7 +125,7 @@ def fetch_download_dict(songs_dict):
     dl_dict = {}
     #dictionary of songs with the download links
     for i in dl_list:
-        title = songs_dict[i][0]
+        title = songs_dict[i][0].replace('/', '-')
         furl = songs_dict[i][1]
         vprint(["Fetching download url for the song: " + title + " from url: " + furl])
         dl_url = get_dl_url(furl)
