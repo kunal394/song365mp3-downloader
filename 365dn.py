@@ -215,13 +215,15 @@ if __name__ == "__main__":
     #argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help = "increase output verbosity to level 1", action = "store_true")
-    parser.add_argument("-vv", "--verbose2", help = "increase output verbosity level 2", action = "store_true")
+    parser.add_argument("-vv", "--verbose2", help = "increase output verbosity to level 2", action = "store_true")
     parser.add_argument("-n", "--noconfirm", help = "do not ask for confirmation", action = "store_true")
     parser.add_argument("-a", "--all", help = "download everything", action = "store_true")
     parser.add_argument("music_url", help = "Bandcamp Song URL")
     args = parser.parse_args()
     verbose = bool(args.verbose)
     verbose2 = bool(args.verbose2)
+    if verbose2 is True:
+        verbose = True
     noconfirm = bool(args.noconfirm)
     automate = bool(args.all)
     parse_url(args.music_url)
