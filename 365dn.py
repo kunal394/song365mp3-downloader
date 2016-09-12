@@ -147,7 +147,7 @@ def handle_artist(album_list):
 
     for i in dl_list:
         print "Downloading album: " + i[0]
-        #handle_album(i[1], i[2], fetched = 1)
+        handle_album(i[1], i[2], fetched = 1)
         print "Download complete"
 
 def handle_album(songs_dict, dpath, fetched = 0, dl_dict = {}):
