@@ -222,7 +222,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     verbose = bool(args.verbose)
     verbose2 = bool(args.verbose2)
-    if verbose2 is True:
+    if verbose2:
         verbose = True
     noconfirm = bool(args.noconfirm)
     automate = bool(args.all)
