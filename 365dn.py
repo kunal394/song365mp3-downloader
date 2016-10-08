@@ -162,13 +162,13 @@ def handle_album(songs_dict, dpath, fetched = 0, dl_dict = {}):
         print "Creating the directory structure... "
         dirpath = "."
         for i in dpath:
-            dirpath = dirpath + '/' + str(i)
+            dirpath = dirpath + '/' + unicode(i)
 
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
 
         for i in dl_dict:
-            print "Downloading " + str(i) + ': ' + dl_dict[i][0] + "... "
+            print "Downloading " + unicode(i) + ': ' + dl_dict[i][0] + "... "
             download_song(dirpath + '/' + dl_dict[i][0] + '.mp3', dl_dict[i][1])
 
 def fetch_download_dict(songs_dict):
@@ -181,7 +181,7 @@ def fetch_download_dict(songs_dict):
         print "List of songs to be downloaded:"
         for i in dl_list:
             if i in songs_dict:
-                print str(i) + ': ' + songs_dict[i][0]
+                print unicode(i) + ': ' + songs_dict[i][0]
     elif noconfirm:
         print 'here in noconfirm'
         dl_list = display_songs(songs_dict)
